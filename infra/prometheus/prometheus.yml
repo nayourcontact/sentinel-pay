@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: payment-platform
+    metrics_path: /actuator/prometheus
+    static_configs: [{targets: ["payment-platform:8080"]}]
+  - job_name: payment-mcp-server
+    metrics_path: /actuator/prometheus
+    static_configs: [{targets: ["payment-mcp-server:8082"]}]
+  - job_name: ai-ops-agent
+    metrics_path: /actuator/prometheus
+    static_configs: [{targets: ["ai-ops-agent:8081"]}]

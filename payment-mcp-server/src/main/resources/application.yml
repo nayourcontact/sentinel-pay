@@ -1,0 +1,34 @@
+server:
+  port: ${MCP_SERVER_PORT:8082}
+  shutdown: graceful
+spring:
+  application:
+    name: sentinelpay-payment-mcp
+  ai:
+    mcp:
+      server:
+        protocol: STREAMABLE
+        name: sentinelpay-payment-operations
+        version: 1.0.0
+        instructions: "Read-only payment operations MCP boundary. Live payment state is authoritative. Do not infer missing payment data."
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
+sentinelpay:
+  payment-api:
+    base-url: ${PAYMENT_API_BASE_URL:http://localhost:8080}
+    internal-key: ${PAYMENT_OPS_INTERNAL_KEY:dev-ops-key}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} level=%-5level service=${spring.application.name} trace=%X{traceId:-na} %logger{36} - %msg%n"
