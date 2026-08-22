@@ -23,8 +23,6 @@ A production-inspired Java 21 / Spring Boot payment platform demonstrating relia
 - Docker Compose
 - Architecture decision records and operational runbooks
 
-> Keep only the items above that are actually implemented in the repository.
-
 ## Runtime topology
 
 | Runtime | Host Port | Responsibility |
@@ -371,8 +369,6 @@ SentinelPay/
 ├── docker-compose.yml
 └── pom.xml
 ```
-
-Remove any entries from this tree that are not actually present in the repository.
 
 ## Design decisions worth discussing
 
