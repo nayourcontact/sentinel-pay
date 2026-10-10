@@ -95,10 +95,12 @@ services:
 
   tempo:
     image: grafana/tempo:2.8.2
-    command: ["-config.file=/etc/tempo/tempo.yml"]
+    command: ["-config.file=/etc/tempo/tempo.yml", "-config.expand-env=true"]
     volumes:
       - ./infra/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
       - tempo-data:/var/tempo
+    environment:
+      TEMPO_BLOCK_RETENTION: ${TEMPO_BLOCK_RETENTION:-48h}
     networks:
       - sentinelpay
     restart: unless-stopped

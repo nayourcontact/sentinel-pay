@@ -399,3 +399,10 @@ See `docs/architecture.md`, `docs/adr/` and `docs/runbooks/` for the reasoning b
 SentinelPay is a portfolio / reference architecture project intended to demonstrate backend engineering, distributed-system design and governed AI integration.
 
 It is not a production payment processor and should not be used to process real financial transactions.
+
+
+Observability production hardening and validation: [docs/production-observability-hardening.md](docs/production-observability-hardening.md).
+
+## OpenTelemetry release readiness
+
+Sampling and Tempo retention are configurable via `TRACING_SAMPLING_PROBABILITY` and `TEMPO_BLOCK_RETENTION` (defaults `1.0`, `48h`). See [production readiness, architecture and verification](docs/distributed-tracing-production-readiness.md). The offline Tempo export verifier can enforce HTTP, Kafka or outbox span relationships via `--require http|kafka|outbox`; run its Python regression suite with `python -m unittest discover -s scripts/tests -v`.

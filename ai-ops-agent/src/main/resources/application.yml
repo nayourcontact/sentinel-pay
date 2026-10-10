@@ -32,7 +32,21 @@ spring:
             payments:
               url: ${PAYMENT_MCP_URL:http://localhost:8082}
               endpoint: /mcp
+    # Privacy: disable optional Spring AI content export independently of our filter.
+    chat:
+      observations:
+        log-prompt: false
+        log-completion: false
+      client:
+        observations:
+          log-prompt: false
+          log-completion: false
+    tools:
+      observations:
+        include-content: false
     vectorstore:
+      observations:
+        log-query-response: false
       pgvector:
         initialize-schema: true
         index-type: HNSW

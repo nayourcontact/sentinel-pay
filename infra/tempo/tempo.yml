@@ -17,4 +17,4 @@ storage:
       path: /var/tempo/wal
 compactor:
   compaction:
-    block_retention: 48h
+    block_retention: ${TEMPO_BLOCK_RETENTION}
