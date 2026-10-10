@@ -1,5 +1,6 @@
 package com.acme.payments.adapter.out.persistence;
 
+import io.opentelemetry.api.OpenTelemetry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -33,7 +34,8 @@ class OutboxPublishingServiceTest {
     void setUp() {
         service = new OutboxPublishingService(
                 repository,
-                kafka
+                kafka,
+                OpenTelemetry.noop()
         );
     }
 
@@ -268,6 +270,37 @@ class OutboxPublishingServiceTest {
                             anyString()
                     );
         }
+    }
+
+    @Test
+    void shouldLinkSavedOriginToNewOutboxPublishSpan() throws Exception {
+        var telemetry = mock(OpenTelemetry.class);
+        var tracer = mock(io.opentelemetry.api.trace.Tracer.class);
+        var builder = mock(io.opentelemetry.api.trace.SpanBuilder.class);
+        var span = mock(io.opentelemetry.api.trace.Span.class);
+        when(telemetry.getTracer("sentinelpay.outbox")).thenReturn(tracer);
+        when(tracer.spanBuilder("outbox.publish.event")).thenReturn(builder);
+        when(builder.setNoParent()).thenReturn(builder);
+        when(builder.setSpanKind(any())).thenReturn(builder);
+        when(builder.setAttribute(anyString(), anyString())).thenReturn(builder);
+        when(builder.addLink(any(io.opentelemetry.api.trace.SpanContext.class))).thenReturn(builder);
+        when(builder.startSpan()).thenReturn(span);
+        when(span.makeCurrent()).thenReturn(() -> {});
+        var linkedService = new OutboxPublishingService(repository, kafka, telemetry);
+        OutboxEventEntity event = event();
+        event.originTraceId = "0123456789abcdef0123456789abcdef";
+        event.originSpanId = "0123456789abcdef";
+        event.originTraceFlags = "01";
+        when(repository.lockNextBatch(100)).thenReturn(List.of(event));
+        when(kafka.send(anyString(), anyString(), anyString()))
+                .thenReturn(CompletableFuture.completedFuture(null));
+        linkedService.publishBatch();
+        var link = org.mockito.ArgumentCaptor.forClass(io.opentelemetry.api.trace.SpanContext.class);
+        verify(builder).addLink(link.capture());
+        assertThat(link.getValue().getTraceId()).isEqualTo(event.originTraceId);
+        assertThat(link.getValue().getSpanId()).isEqualTo(event.originSpanId);
+        verify(span).end();
+        assertThat(event.publishedAt).isNotNull();
     }
 
     private OutboxEventEntity event() {

@@ -1,5 +1,10 @@
 package com.acme.payments.adapter.out.persistence;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Scope;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -95,4 +100,19 @@ class JpaOutboxTest {
                 .extracting(event -> event.id)
                 .doesNotHaveDuplicates();
     }
+    @Test
+    void shouldStoreOriginIdentifiersWhenSpanIsActive() {
+        var context = SpanContext.create("0123456789abcdef0123456789abcdef", "0123456789abcdef",
+                TraceFlags.getSampled(), TraceState.getDefault());
+        var span = Span.wrap(context);
+        try (Scope ignored = span.makeCurrent()) {
+            outbox.append("Payment", UUID.randomUUID(), "payment.authorized", "{}");
+        }
+        ArgumentCaptor<OutboxEventEntity> captor = ArgumentCaptor.forClass(OutboxEventEntity.class);
+        verify(repository).save(captor.capture());
+        assertThat(captor.getValue().originTraceId).isEqualTo(context.getTraceId());
+        assertThat(captor.getValue().originSpanId).isEqualTo(context.getSpanId());
+        assertThat(captor.getValue().originTraceFlags).isEqualTo("01");
+    }
+
 }

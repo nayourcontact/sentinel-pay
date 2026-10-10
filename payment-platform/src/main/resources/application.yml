@@ -20,7 +20,10 @@ spring:
       enable-auto-commit: false
       properties:
         spring.json.trusted.packages: "com.acme.payments"
+    template:
+      observation-enabled: true
     listener:
+      observation-enabled: true
       ack-mode: record
 server:
   shutdown: graceful
@@ -33,11 +36,26 @@ management:
     health:
       probes:
         enabled: true
-  tracing:
-    sampling:
-      probability: 1.0
 payments:
   outbox:
     poll-delay: 250
   ops:
     internal-key: ${PAYMENT_OPS_INTERNAL_KEY:dev-ops-key}
+---
+management:
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+    logging:
+      export:
+        otlp:
+          enabled: false
+  otlp:
+    metrics:
+      export:
+        enabled: false

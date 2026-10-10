@@ -13,6 +13,9 @@ class OutboxEventEntity {
     @Column(nullable = false) String eventType;
     @Column(nullable = false, columnDefinition = "text") String payload;
     @Column(nullable = false) Instant createdAt;
+    @Column(length = 32) String originTraceId;
+    @Column(length = 16) String originSpanId;
+    @Column(length = 2) String originTraceFlags;
     Instant publishedAt;
     Instant failedAt;
     @Column(columnDefinition = "text") String lastError;

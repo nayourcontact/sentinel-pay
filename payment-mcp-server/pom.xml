@@ -8,6 +8,11 @@
     </parent>
     <artifactId>payment-mcp-server</artifactId>
     <dependencies>
+        <!-- Spring Boot 4 native OpenTelemetry SDK, Micrometer tracing and OTLP exporter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
