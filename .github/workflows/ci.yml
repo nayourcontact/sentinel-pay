@@ -1,10 +1,19 @@
 name: sentinelpay-ci
+
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   java:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -12,9 +21,23 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - run: mvn -B verify
+      # Includes Surefire unit tests and Failsafe Testcontainers integration tests.
+      # GitHub-hosted Ubuntu runners have Docker available.
+      - name: Build and verify Java modules
+        run: mvn -B --no-transfer-progress verify
+      - name: Upload Java test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-test-reports
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
+          if-no-files-found: ignore
+
   ui:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: ops-ui
@@ -25,5 +48,36 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: ops-ui/package-lock.json
-      - run: npm install
+      - run: npm ci
       - run: npm run build
+
+  publish:
+    name: Publish ${{ matrix.service }} image
+    needs: [java, ui]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [payment-platform, payment-mcp-server, ai-ops-agent, ops-ui]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push immutable image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service == 'ops-ui' && './ops-ui' || '.' }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/${{ matrix.service }}:sha-${{ github.sha }}
+          cache-from: type:gha,scope=${{ matrix.service }}
+          cache-to: type:gha,mode=max,scope=${{ matrix.service }}

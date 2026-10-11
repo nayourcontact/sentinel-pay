@@ -1,0 +1,11 @@
+# Run together with docker-compose.yml. Deploy only images published by the CI workflow.
+# RELEASE_SHA must be a full 40-character commit SHA from a successful main CI run.
+services:
+  payment-platform:
+    image: ghcr.io/${GHCR_REPOSITORY:?Set GHCR_REPOSITORY (owner/repo)}/payment-platform:sha-${RELEASE_SHA:?Set RELEASE_SHA}
+  payment-mcp-server:
+    image: ghcr.io/${GHCR_REPOSITORY:?Set GHCR_REPOSITORY (owner/repo)}/payment-mcp-server:sha-${RELEASE_SHA:?Set RELEASE_SHA}
+  ai-ops-agent:
+    image: ghcr.io/${GHCR_REPOSITORY:?Set GHCR_REPOSITORY (owner/repo)}/ai-ops-agent:sha-${RELEASE_SHA:?Set RELEASE_SHA}
+  ops-ui:
+    image: ghcr.io/${GHCR_REPOSITORY:?Set GHCR_REPOSITORY (owner/repo)}/ops-ui:sha-${RELEASE_SHA:?Set RELEASE_SHA}
