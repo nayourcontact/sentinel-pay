@@ -19,6 +19,7 @@ public class PaymentApplicationService {
 
     @Transactional
     public Payment create(CreatePayment command) {
+        payments.lockMerchantReference(command.merchantReference());
         var existing = payments.findByMerchantReference(command.merchantReference());
         if (existing.isPresent()) return existing.get();
 
