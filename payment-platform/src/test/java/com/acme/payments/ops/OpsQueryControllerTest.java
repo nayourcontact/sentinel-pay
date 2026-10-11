@@ -90,6 +90,16 @@ class OpsQueryControllerTest {
         }
     }
 
+    @Test
+    void shouldRejectUnconfiguredInternalOpsKey() {
+        OpsQueryController unsecured = new OpsQueryController(jdbc, "");
+        assertThatThrownBy(() -> unsecured.payment("", UUID.randomUUID()))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(ex -> assertThat(((ResponseStatusException) ex).getStatusCode())
+                        .isEqualTo(HttpStatus.FORBIDDEN));
+        verifyNoInteractions(jdbc);
+    }
+
     @Nested
     @DisplayName("payment")
     class PaymentQuery {

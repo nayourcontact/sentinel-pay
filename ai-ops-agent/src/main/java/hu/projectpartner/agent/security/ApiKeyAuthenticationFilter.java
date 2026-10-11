@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
 
 @Component
@@ -33,7 +35,8 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String supplied = request.getHeader("X-API-Key");
-        if (expectedApiKey.equals(supplied)) {
+        if (supplied != null && MessageDigest.isEqual(
+                expectedApiKey.getBytes(StandardCharsets.UTF_8), supplied.getBytes(StandardCharsets.UTF_8))) {
             var auth = new UsernamePasswordAuthenticationToken(
                     "api-client",
                     null,

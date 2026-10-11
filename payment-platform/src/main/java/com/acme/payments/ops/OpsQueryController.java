@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @RestController
 @RequestMapping("/internal/ops")
@@ -159,7 +161,9 @@ public class OpsQueryController {
     }
 
     private void authorize(String supplied) {
-        if (!Objects.equals(expectedKey, supplied)) {
+        if (expectedKey == null || expectedKey.isBlank() || supplied == null ||
+                !MessageDigest.isEqual(expectedKey.getBytes(StandardCharsets.UTF_8),
+                        supplied.getBytes(StandardCharsets.UTF_8))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "invalid internal operations key");
         }
     }

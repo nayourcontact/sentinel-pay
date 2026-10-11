@@ -1,0 +1,40 @@
+# Use with: docker compose -f docker-compose.yml -f docker-compose.production.yml up -d
+# Required secrets MUST be provided via environment or Docker secrets manager.
+services:
+  payment-db:
+    environment:
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD:?PAYMENT_DB_PASSWORD is required}
+  agent-db:
+    environment:
+      POSTGRES_PASSWORD: ${AGENT_DB_PASSWORD:?AGENT_DB_PASSWORD is required}
+  payment-platform:
+    environment:
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?PAYMENT_DB_PASSWORD is required}
+      PAYMENT_OPS_INTERNAL_KEY: ${PAYMENT_OPS_INTERNAL_KEY:?PAYMENT_OPS_INTERNAL_KEY is required}
+    ports:
+      - "127.0.0.1:8085:8080"
+  payment-mcp-server:
+    environment:
+      PAYMENT_OPS_INTERNAL_KEY: ${PAYMENT_OPS_INTERNAL_KEY:?PAYMENT_OPS_INTERNAL_KEY is required}
+    ports:
+      - "127.0.0.1:8082:8082"
+  ai-ops-agent:
+    environment:
+      AGENT_DB_PASSWORD: ${AGENT_DB_PASSWORD:?AGENT_DB_PASSWORD is required}
+      AGENT_API_KEY: ${AGENT_API_KEY:?AGENT_API_KEY is required}
+    ports:
+      - "127.0.0.1:8081:8081"
+  ops-ui:
+    ports:
+      - "127.0.0.1:3000:80"
+  grafana:
+    ports:
+      - "127.0.0.1:3001:3000"
+  grafana:
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+    ports:
+      - "127.0.0.1:3001:3000"
+  prometheus:
+    ports:
+      - "127.0.0.1:9090:9090"
