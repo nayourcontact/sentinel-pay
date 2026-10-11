@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -27,11 +28,14 @@ class JpaPaymentRepositoryTest {
     @Mock
     private SpringDataPaymentRepository delegate;
 
+    @Mock
+    private JdbcTemplate jdbcTemplate;
+
     private JpaPaymentRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new JpaPaymentRepository(delegate);
+        repository = new JpaPaymentRepository(delegate, jdbcTemplate);
     }
 
     @Nested
