@@ -1,0 +1,8 @@
+# Only combine with docker-compose.performance.yml; never the regular stack.
+services:
+  perf-payment-platform:
+    environment:
+      APP_SECURITY_JWT_ENABLED: "true"
+      APP_SECURITY_JWT_ISSUER_URI: http://localhost:18088/realms/sentinelpay
+      APP_SECURITY_JWT_JWK_SET_URI: http://host.docker.internal:18088/realms/sentinelpay/protocol/openid-connect/certs
+      APP_SECURITY_JWT_AUDIENCE: sentinelpay-api
