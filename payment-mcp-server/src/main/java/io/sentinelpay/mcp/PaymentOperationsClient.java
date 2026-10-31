@@ -21,11 +21,13 @@ import java.util.Map;
 public class PaymentOperationsClient {
     private final RestClient client;
     private final String internalKey;
+    private final PaymentServiceTokenProvider tokenProvider;
     private final CircuitBreaker circuitBreaker;
     private final Retry retry;
 
     public PaymentOperationsClient(
             RestClient.Builder builder,
+            PaymentServiceTokenProvider tokenProvider,
             @Value("${sentinelpay.payment-api.base-url:http://localhost:8080}") String baseUrl,
             @Value("${sentinelpay.payment-api.internal-key:dev-ops-key}") String internalKey,
             @Value("${sentinelpay.payment-api.retry.max-attempts:3}") int maxAttempts,
@@ -40,6 +42,7 @@ public class PaymentOperationsClient {
                 .build();
 
         this.internalKey = internalKey;
+        this.tokenProvider = tokenProvider;
         this.circuitBreaker = CircuitBreaker.of("paymentOperationsApi", CircuitBreakerConfig.custom()
                 .failureRateThreshold(failureRateThreshold)
                 .minimumNumberOfCalls(minimumCalls)
@@ -68,11 +71,13 @@ public class PaymentOperationsClient {
 
     private Map<String, Object> getMap(String path) {
         return protectedGet(() -> client.get().uri(path).header("X-Internal-Ops-Key", internalKey)
+                .headers(headers -> tokenProvider.apply(headers))
                 .retrieve().body(new ParameterizedTypeReference<>() {}));
     }
 
     private List<Map<String, Object>> getList(String path) {
         return protectedGet(() -> client.get().uri(path).header("X-Internal-Ops-Key", internalKey)
+                .headers(headers -> tokenProvider.apply(headers))
                 .retrieve().body(new ParameterizedTypeReference<>() {}));
     }
 
