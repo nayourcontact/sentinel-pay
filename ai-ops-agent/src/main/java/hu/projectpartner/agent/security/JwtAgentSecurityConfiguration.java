@@ -19,6 +19,7 @@ public class JwtAgentSecurityConfiguration {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").hasRole("ADMIN")
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/prometheus", "/actuator/metrics", "/actuator/metrics/**").hasRole("OPS_READER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/knowledge", "/api/v1/knowledge/files").hasAnyRole("KNOWLEDGE_WRITER", "ADMIN")
