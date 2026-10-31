@@ -8,6 +8,11 @@
     </parent>
     <artifactId>payment-platform</artifactId>
     <dependencies>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.2.0</version>
+        </dependency>
         <!-- Spring Boot 4 native OpenTelemetry SDK, Micrometer tracing and OTLP exporter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

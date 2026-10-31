@@ -93,3 +93,12 @@ management:
     metrics:
       export:
         enabled: false
+
+# API documentation is opt-in; enable only in isolated development environments.
+springdoc:
+  api-docs:
+    enabled: ${OPENAPI_ENABLED:false}
+  swagger-ui:
+    enabled: ${OPENAPI_ENABLED:false}
+    path: /swagger-ui.html
+  show-actuator: false
