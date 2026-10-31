@@ -1,27 +1,79 @@
 # SentinelPay — AI-Native Distributed Payment Operations Platform
 
-A production-inspired Java 21 / Spring Boot payment platform demonstrating reliable event-driven processing, transactional consistency, observability, and governed AI-assisted operations.
+**A production-inspired reference architecture for reliable payment processing, event-driven systems and secure AI-assisted operations.**
 
-**Core idea:** the payment system remains deterministic and authoritative; the AI layer can investigate live operational state, but cannot bypass the platform's security or consistency boundaries.
+Built with **Java 21, Spring Boot 4, PostgreSQL, Kafka, Spring Security, Spring AI and Model Context Protocol (MCP)**. The payment core remains deterministic and authoritative; the AI agent can investigate operational state through **read-only, audited tools**, without direct database or payment-provider access.
 
-## What this demonstrates
+> **Portfolio / educational project.** Uses a mock payment provider and local infrastructure. Not a certified payment processor and **not intended for real financial transactions**.
 
-- Java 21 and Spring Boot 4
-- Domain-centric payment state machine
-- PostgreSQL + Flyway
-- Transactional Outbox Pattern
-- Apache Kafka and at-least-once delivery
-- Idempotent ledger and webhook projections
-- Optimistic locking and request idempotency
-- Spring AI + Ollama
-- MCP tool calling for authoritative live system evidence
-- PGVector RAG for runbooks and operational policy
-- Prompt-injection-aware trust boundaries
-- Human-in-the-loop design for future write operations
-- Prometheus / Grafana observability
-- React + TypeScript operations console
-- Docker Compose
-- Architecture decision records and operational runbooks
+[![CI](https://github.com/nayourcontact/sentinel-pay/actions/workflows/ci.yml/badge.svg)](https://github.com/nayourcontact/sentinel-pay/actions/workflows/ci.yml)
+[![Java 21](https://img.shields.io/badge/Java-21-007396)](https://openjdk.org/projects/jdk/21/)
+[![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4-6DB33F)](https://spring.io/projects/spring-boot)
+
+## At a glance
+
+| Engineering challenge | Approach demonstrated |
+|---|---|
+| Transactional consistency | Payment mutation and outbox event inserted in one PostgreSQL transaction |
+| Reliable event processing | Kafka at-least-once publication, idempotent consumers and database uniqueness constraints |
+| Duplicate requests / concurrent updates | Idempotency keys and optimistic locking |
+| Secure service boundaries | Spring Security, JWT/RBAC, OAuth2 client credentials and internal API-key checks |
+| AI-assisted incident analysis | Spring AI + Ollama, PGVector RAG and read-only MCP tools for live operational evidence |
+| Operations & delivery | OpenTelemetry, Prometheus/Grafana, Docker Compose, CI/CD, performance tests and runbooks |
+
+**Key design principle:** `RAG = documented knowledge` · `MCP = live system evidence` · `LLM = reasoning`; the LLM is **never** the source of truth for payment state.
+
+## Quick start
+
+Requirements: Java 21 and Maven for local builds; Docker Compose for the reference stack. Ollama models require additional disk space and memory.
+
+```bash
+git clone https://github.com/nayourcontact/sentinel-pay.git
+cd sentinel-pay
+cp .env.example .env
+# Review local-only values in .env; never use sample secrets outside development.
+docker compose up --build -d
+docker compose exec ollama ollama pull qwen3:4b
+docker compose exec ollama ollama pull nomic-embed-text
+docker compose ps
+```
+
+On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. For a clean Maven verification run: `mvn clean verify`.
+
+**Local entry points:** [Operations UI](http://localhost:3000) · [Payment API](http://localhost:8085) · [Agent](http://localhost:8081) · [Grafana](http://localhost:3001). These links work after starting the stack locally; they are **not hosted demos**.
+
+### Explore the implementation
+
+- **[Architecture and design trade-offs](docs/architecture.md)** — service boundaries, payment flow, consistency model.
+- **[System design case study](docs/system-design-case-study.md)** — deeper engineering decisions and failure handling.
+- **[JWT / OAuth2 / RBAC](docs/security-jwt-rbac.md)** — authentication, authorization and service-to-service access.
+- **[OpenAPI / Swagger](docs/openapi-swagger.md)** — opt-in REST API documentation for Payment Platform and AI Ops Agent.
+- **[Performance testing](docs/performance-test-report.md)** — methodology and test results.
+- **[Observability and production hardening](docs/production-observability-hardening.md)** — telemetry and operations.
+- **[CI/CD and deployment](docs/ci-cd-deployment.md)** — build and delivery workflow.
+- **[Architecture decision records](docs/adr/)** · **[Runbooks](docs/runbooks/)** · **[Threat model](docs/threat-model/)**
+
+### Security and API documentation
+
+The REST APIs have JWT/RBAC security modes, with a separate internal operations key for the protected operations boundary. The MCP service uses OAuth2 client credentials to access the Payment Platform in the secured integration scenario. **Documentation does not grant access to business endpoints.**
+
+Swagger/OpenAPI is **disabled by default** (`OPENAPI_ENABLED=false`). An isolated local test can enable it with `OPENAPI_ENABLED=true`, serving `/swagger-ui/index.html` and `/v3/api-docs` in the application. The Payment Platform Swagger page has also been tested with unauthenticated viewing in the local test configuration; this deliberately exposes API metadata and must **not** be enabled on a public production deployment. The AI Ops Agent Swagger route retains its independent security configuration and requires separate runtime validation.
+
+### Contents
+
+- [Runtime topology](#runtime-topology)
+- [Architecture rule that matters](#architecture-rule-that-matters)
+- [High-level architecture](#high-level-architecture)
+- [MCP tools](#mcp-tools)
+- [Failure semantics](#failure-semantics)
+- [End-to-end payment flow](#end-to-end-payment-flow)
+- [Start the platform — expanded instructions](#start-the-platform)
+- [Create a payment](#create-a-payment)
+- [Ask the AI operator](#ask-the-ai-operator)
+- [Design decisions worth discussing](#design-decisions-worth-discussing)
+- [Security notes](#security-notes)
+
+---
 
 ## Runtime topology
 
@@ -47,7 +99,7 @@ MCP = authoritative live payment data
 LLM = reasoning over evidence
 ```
 
-The agent has **no direct SQL, shell, filesystem, Kafka-admin or provider credentials**.
+The designed agent trust boundary does **not** grant direct SQL, shell, filesystem, Kafka-admin or payment-provider credentials.
 
 This separation is deliberate:
 
@@ -238,6 +290,8 @@ OLLAMA_EMBED_MODEL=nomic-embed-text
 
 Do not commit real credentials or secrets.
 
+> **Authentication note:** Examples below illustrate the default local/demo API-key mode. When JWT mode is enabled, supply valid bearer tokens with the required roles; internal operations additionally require the internal key. See [security documentation](docs/security-jwt-rbac.md).
+
 ## Create a payment
 
 ### Bash / Git Bash
@@ -391,7 +445,7 @@ See `docs/architecture.md`, `docs/adr/` and `docs/runbooks/` for the reasoning b
 - Never commit `.env` files containing real credentials.
 - Keep `.env` in `.gitignore`.
 - Provide only safe placeholders in `.env.example`.
-- The AI agent should not receive direct database, shell, Kafka-admin or payment-provider credentials.
+- The AI agent must not receive direct database, shell, Kafka-admin or payment-provider credentials.
 - Current MCP operations are intentionally read-only.
 
 ## Disclaimer
