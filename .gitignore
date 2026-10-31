@@ -30,3 +30,6 @@ __pycache__/
 .pytest_cache/
 
 /performance/results/
+
+# Local Keycloak passwords, generated realm and admin credentials
+/.local/

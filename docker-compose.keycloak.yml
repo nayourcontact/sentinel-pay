@@ -1,0 +1,16 @@
+# Local-only OpenID Connect identity provider. No cloud services.
+name: sentinelpay-auth
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.4
+    command: ["start-dev", "--import-realm", "--hostname=http://localhost:18088"]
+    env_file:
+      - ./.local/keycloak/admin.env
+    environment:
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./.local/keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
+    ports:
+      - "127.0.0.1:18088:8080"
+    restart: "no"

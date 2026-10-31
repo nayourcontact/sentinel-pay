@@ -20,6 +20,11 @@ sentinelpay:
   payment-api:
     base-url: ${PAYMENT_API_BASE_URL:http://localhost:8080}
     internal-key: ${PAYMENT_OPS_INTERNAL_KEY:dev-ops-key}
+    oauth2:
+      enabled: ${PAYMENT_API_OAUTH2_ENABLED:false}
+      token-uri: ${PAYMENT_API_OAUTH2_TOKEN_URI:}
+      client-id: ${PAYMENT_API_OAUTH2_CLIENT_ID:}
+      client-secret: ${PAYMENT_API_OAUTH2_CLIENT_SECRET:}
     connect-timeout: ${PAYMENT_API_CONNECT_TIMEOUT:1s}
     read-timeout: ${PAYMENT_API_READ_TIMEOUT:2s}
     retry:

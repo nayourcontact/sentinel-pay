@@ -41,6 +41,12 @@ payments:
     poll-delay: 250
   ops:
     internal-key: ${PAYMENT_OPS_INTERNAL_KEY:dev-ops-key}
+app:
+  security:
+    jwt:
+      enabled: ${APP_SECURITY_JWT_ENABLED:false}
+      issuer-uri: ${APP_SECURITY_JWT_ISSUER_URI:}
+      jwk-set-uri: ${APP_SECURITY_JWT_JWK_SET_URI:}
 ---
 management:
   tracing:

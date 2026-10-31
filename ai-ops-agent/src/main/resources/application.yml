@@ -56,6 +56,10 @@ spring:
 app:
   security:
     api-key: ${AGENT_API_KEY:dev-secret-change-me}
+    jwt:
+      enabled: ${APP_SECURITY_JWT_ENABLED:false}
+      issuer-uri: ${APP_SECURITY_JWT_ISSUER_URI:}
+      jwk-set-uri: ${APP_SECURITY_JWT_JWK_SET_URI:}
 management:
   endpoints:
     web:

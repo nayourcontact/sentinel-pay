@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,6 +23,13 @@ public class ApiExceptionHandler {
         return pd;
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    ProblemDetail missingParameter(MissingServletRequestParameterException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Required request parameter is missing: " + ex.getParameterName());
+        pd.setType(URI.create("urn:problem:validation"));
+        return pd;
+    }
     @ExceptionHandler(Exception.class)
     ProblemDetail unexpected(Exception ex) {
         log.error("event=api.request.failed errorType={}", ex.getClass().getSimpleName(), ex);
@@ -31,3 +39,4 @@ public class ApiExceptionHandler {
         return pd;
     }
 }
+

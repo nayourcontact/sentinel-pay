@@ -22,7 +22,8 @@ class PaymentOperationsClientTest {
     private Fixture fixture(int attempts, int minimumCalls) {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        PaymentOperationsClient client = new PaymentOperationsClient(builder, "http://localhost:8080", "test-key",
+        PaymentOperationsClient client = new PaymentOperationsClient(builder,
+                new PaymentServiceTokenProvider(false, "", "", "", new tools.jackson.databind.ObjectMapper()), "http://localhost:8080", "test-key",
                 attempts, Duration.ZERO, 50f, minimumCalls, 10, Duration.ofMinutes(1));
         return new Fixture(client, server);
     }
